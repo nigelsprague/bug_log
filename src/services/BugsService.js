@@ -3,6 +3,15 @@ import { dbContext } from "../db/DbContext";
 import { Forbidden } from "../utils/Errors";
 
 class BugsService {
+  async deleteBug(bugId, userId) {
+    const bugToDelete = await dbContext.Bugs.findById(bugId)
+    if (bugToDelete.creatorId != userId) {
+      throw new Forbidden("Not your bug to delete, pal")
+    }
+    await bugToDelete.deleteOne()
+    return `${bugToDelete.title} has been deleted`
+  }
+
   async editBug(bugId, bugData) {
     const bugToUpdate = await dbContext.Bugs.findById(bugId)
     bugToUpdate.closed = bugData.closed ?? bugToUpdate.closed
@@ -11,7 +20,6 @@ class BugsService {
     await bugToUpdate.save()
     return bugToUpdate
   }
-
 
   async getAllBugs() {
     const bug = await dbContext.Bugs.find()

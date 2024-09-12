@@ -11,6 +11,18 @@ export class BugsController extends BaseController {
       .get('', this.getAllBugs)
       .get('/:bugId', this.getBugById)
       .put('/:bugId', this.editBug)
+      .delete('/:bugId', this.deleteBug)
+  }
+
+  async deleteBug(request, response, next) {
+    try {
+      const bugId = request.params.bugId
+      const user = request.userInfo
+      const message = await bugsService.deleteBug(bugId, user.id)
+      response.send(message)
+    } catch (error) {
+      next(error)
+    }
   }
 
   async createBug(request, response, next) {
