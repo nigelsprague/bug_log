@@ -1,4 +1,3 @@
-import { BugsController } from "../controllers/BugsController";
 import { dbContext } from "../db/DbContext";
 import { Forbidden } from "../utils/Errors";
 
