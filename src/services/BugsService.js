@@ -1,5 +1,5 @@
 import { dbContext } from "../db/DbContext";
-import { Forbidden } from "../utils/Errors";
+import { BadRequest, Forbidden } from "../utils/Errors";
 
 class BugsService {
   async deleteBug(bugId, userId) {
@@ -11,14 +11,6 @@ class BugsService {
     return `${bugToDelete.title} has been deleted`
   }
 
-  async editBug(bugId, bugData) {
-    const bugToUpdate = await dbContext.Bugs.findById(bugId)
-    bugToUpdate.closed = bugData.closed ?? bugToUpdate.closed
-    bugToUpdate.title = bugData.title ?? bugToUpdate.title
-    bugToUpdate.description = bugData.description ?? bugToUpdate.description
-    await bugToUpdate.save()
-    return bugToUpdate
-  }
 
   async getAllBugs() {
     const bug = await dbContext.Bugs.find()
@@ -26,12 +18,24 @@ class BugsService {
   }
 
   async getBugById(bugId, userId) {
-    const bug = await dbContext.Bugs.findById(bugId)
-    await bug.populate('creator')
+    const bug = await dbContext.Bugs.findById(bugId).populate('creator')
     if (bug.creatorId != userId) {
       throw new Forbidden("You cannot access another user's bug");
     }
     return bug
+  }
+
+  async editBug(bugId, bugData, userId) {
+    const bugToUpdate = await dbContext.Bugs.findById(bugId)
+
+    if (bugToUpdate.creatorId != userId) {
+      throw new Forbidden("You cannot access another user's bug");
+    }
+    bugToUpdate.closed = bugData.closed ?? bugToUpdate.closed
+    bugToUpdate.title = bugData.title ?? bugToUpdate.title
+    bugToUpdate.description = bugData.description ?? bugToUpdate.description
+    await bugToUpdate.save()
+    return bugToUpdate
   }
 
   async createBug(bugData) {
